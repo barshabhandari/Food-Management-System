@@ -1,23 +1,25 @@
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 
-class PostBase(BaseModel):
+class ProductBase(BaseModel):
     name: str
     actual_price: int
     discount_price: float
     stock: int
     is_published: bool=True
     image_id: int
-    
-class PostCreate(PostBase):
+
+
+class ProductCreate(ProductBase):
     pass
 
-class Post(PostBase):
+class Product(ProductBase):
     id : int
     created_at : datetime
     owner_id: int
+    image_id: int
         
     class Config():
         form_attributes = True

@@ -11,14 +11,14 @@ from app.modules.user import models as user_models
 router = APIRouter(prefix="/posts",
                    tags=['Products'])
 
-@router.get("/", response_model=List[Schema.Post])
-async def get_all_posts(db: Session = Depends(get_db),
+@router.get("/", response_model=List[Schema.Product])
+async def get_all_products(db: Session = Depends(get_db),
                         current_user:user_models.User = Depends(oauth2_router.get_current_user)):
     post = db.query(models.Product).all()
     return post
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_post(post: Schema.PostCreate, db: Session = Depends(get_db),
+async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_db),
                 current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
     new_post = models.Product(**post.dict(), owner_id = current_user.id)
     db.add(new_post)
@@ -26,8 +26,8 @@ async def create_post(post: Schema.PostCreate, db: Session = Depends(get_db),
     db.refresh(new_post)
     return new_post
 
-@router.get("/{id}", response_model=Schema.Post)
-async def get_single_post(id:int, db: Session = Depends(get_db),
+@router.get("/{id}", response_model=Schema.Product)
+async def get_single_product(id:int, db: Session = Depends(get_db),
                           current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
     post = db.query(models.Product).filter(models.Product.id == id).first()
     if not post:
@@ -36,7 +36,7 @@ async def get_single_post(id:int, db: Session = Depends(get_db),
     return post
 
 @router.put("/{id}")
-async def updated_post(id:int, update_post:Schema.PostBase, db:Session = Depends(get_db),
+async def updated_product(id:int, update_post:Schema.ProductBase, db:Session = Depends(get_db),
                     current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
     post_query= db.query(models.Product).filter(models.Product.id == id)
     post = post_query.first()
@@ -52,7 +52,7 @@ async def updated_post(id:int, update_post:Schema.PostBase, db:Session = Depends
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def deleted_post(id:int, db:Session= Depends(get_db),
+async def deleted_product(id:int, db:Session= Depends(get_db),
                     current_user:user_models.User = Depends(oauth2_router.get_current_user)):
     post_query= db.query(models.Product).filter(models.Product.id == id)
     post= post_query.first()
