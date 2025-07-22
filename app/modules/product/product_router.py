@@ -12,8 +12,7 @@ router = APIRouter(prefix="/posts",
                    tags=['Products'])
 
 @router.get("/", response_model=List[Schema.Product])
-async def get_all_products(db: Session = Depends(get_db),
-                        current_user:user_models.User = Depends(oauth2_router.get_current_user)):
+async def get_all_products(db: Session = Depends(get_db)):
     post = db.query(models.Product).all()
     return post
 
@@ -27,8 +26,7 @@ async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_d
     return new_post
 
 @router.get("/{id}", response_model=Schema.Product)
-async def get_single_product(id:int, db: Session = Depends(get_db),
-                          current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
+async def get_single_product(id:int, db: Session = Depends(get_db)):
     post = db.query(models.Product).filter(models.Product.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
