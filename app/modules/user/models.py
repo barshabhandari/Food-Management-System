@@ -9,6 +9,7 @@ class User(Base):
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text('now()'), nullable=False)
     is_active = Column(Boolean, server_default=text('True'), nullable=False) 
-    products = relationship("Products", back_populates="owner")
+    products = relationship("Product", back_populates="owner")
+    carts = relationship("Cart", back_populates="owner")
     
 

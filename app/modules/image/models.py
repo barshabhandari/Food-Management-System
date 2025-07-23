@@ -7,4 +7,4 @@ class Image(Base):
     __tablename__ = "images"
     id = Column(Integer, primary_key=True, nullable=False )
     key = Column(String, unique=True)
-    product = relationship("Products", back_populates="image")
+    product = relationship("Product", back_populates="image")

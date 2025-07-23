@@ -19,6 +19,10 @@ async def get_all_products(db: Session = Depends(get_db)):
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_db),
                 current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
+    # Check for duplicate product name
+    existing_product = db.query(models.Product).filter(models.Product.name == post.name).first()
+    if existing_product:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Product with name {post.name} already exists.")
     new_post = models.Product(**post.dict(), owner_id = current_user.id)
     db.add(new_post)
     db.commit()
