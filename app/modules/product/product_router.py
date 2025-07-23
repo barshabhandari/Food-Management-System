@@ -1,7 +1,6 @@
-from typing import List
-from fastapi import APIRouter, Depends, Response, status, HTTPException
+from fastapi import APIRouter, Depends, Response, status, HTTPException, Query
 from sqlalchemy.orm import Session
-
+from typing import Optional, List
 from app.modules.oauth2 import oauth2_router
 from ...database import get_db
 from . import models
@@ -11,7 +10,23 @@ from app.modules.user import models as user_models
 router = APIRouter(prefix="/posts",
                    tags=['Products'])
 
+
+
+# Searching for products
 @router.get("/", response_model=List[Schema.Product])
+async def search_products(
+    q: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    query = db.query(models.Product)
+    if q:
+        query = query.filter(models.Product.name.ilike(f"%{q}%"))
+    return query.all()
+
+
+
+
+@router.get("")
 async def get_all_products(db: Session = Depends(get_db)):
     post = db.query(models.Product).all()
     return post
