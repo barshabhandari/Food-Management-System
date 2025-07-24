@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel
 
 
@@ -10,6 +10,7 @@ class ProductBase(BaseModel):
     stock: int
     is_published: bool=True
     image_id: int
+    expire_date: date | None = None
 
 
 class ProductCreate(ProductBase):

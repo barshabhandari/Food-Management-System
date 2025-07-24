@@ -31,7 +31,7 @@ async def get_all_products(db: Session = Depends(get_db)):
     post = db.query(models.Product).all()
     return post
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=Schema.Product)
 async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_db),
                 current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
     # Check for duplicate product name
@@ -52,7 +52,7 @@ async def get_single_product(id:int, db: Session = Depends(get_db)):
                             detail=f"Id {id} was not found")
     return post
 
-@router.put("/{id}")
+@router.put("/{id}", response_model=Schema.Product)
 async def updated_product(id:int, update_post:Schema.ProductBase, db:Session = Depends(get_db),
                     current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
     post_query= db.query(models.Product).filter(models.Product.id == id)

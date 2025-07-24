@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, status, UploadFile, HTTPException
 from sqlalchemy.orm import Session
 from ...database import get_db
 from . import models, Schema
+from app.modules.oauth2.oauth2_router import get_current_user
+from app.modules.user.models import User
 
 router = APIRouter(prefix="/images", tags=['Image'])
 
@@ -13,7 +15,8 @@ UPLOAD_DIR = "static"
 os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure the static directory exists
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=Schema.ImageBase)
-async def upload_image(image: UploadFile, db: Session = Depends(get_db)):
+async def upload_image(image: UploadFile, db: Session = Depends(get_db),
+current_user: User = Depends(get_current_user)):
     if image.content_type not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Invalid image format. Only PNG and JPEG are allowed.")
 

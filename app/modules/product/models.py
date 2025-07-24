@@ -1,4 +1,4 @@
-from sqlalchemy import TIMESTAMP, Boolean, Column, Float, ForeignKey, Integer, String, text
+from sqlalchemy import TIMESTAMP, Boolean, Column, Float, ForeignKey, Integer, String, text, Date
 from ...database import Base
 from sqlalchemy.orm import relationship
 
@@ -10,6 +10,7 @@ class Product(Base):
     discount_price = Column(Float, nullable=False)
     stock = Column(Integer, nullable=False)
     is_published = Column(Boolean, server_default=text('True'), nullable=False)
+    expire_date = Column(Date, nullable=True)
     image_id = Column(Integer, ForeignKey("images.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(TIMESTAMP(timezone="True"), server_default=text('now()'),
                         nullable=False)
