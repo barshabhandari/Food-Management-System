@@ -6,10 +6,6 @@ from sqlalchemy import pool
 from alembic import context
 from app.modules.product.models import Base
 from app.config import settings
-from app.modules.product import models as product_models
-from app.modules.user import models as user_models
-from app.modules.image import models as image_models
-from app.modules.cart import models as cart_models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
