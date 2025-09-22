@@ -10,4 +10,5 @@ class Cart(Base):
                         nullable=False)
     total_amount = Column(Float, nullable=False)
     owner = relationship("User", back_populates="carts")
+    payments = relationship("Payment", back_populates="cart")
     

@@ -14,8 +14,10 @@ class UserCreate(BaseModel):
 
 class UserOut(BaseModel):
     id: int
-    email:EmailStr
+    email: EmailStr
     created_at: datetime
     is_active: bool
+    is_admin: bool
+
     class Config():
-        form_attributes= True
+        form_attributes = True

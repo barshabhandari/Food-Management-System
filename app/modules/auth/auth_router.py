@@ -5,7 +5,7 @@ from . import Schema
 from sqlalchemy.orm import Session
 from ...database import get_db
 from app.modules.user import models
-from ... import utils
+from app.utils import utils
 from app.modules.oauth2 import Schema, oauth2_router
 
 

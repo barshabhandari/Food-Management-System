@@ -1,4 +1,5 @@
 import os
+from PIL import Image as PILImage
 from datetime import datetime
 from fastapi import APIRouter, Depends, status, UploadFile, HTTPException
 from sqlalchemy.orm import Session
@@ -9,7 +10,7 @@ from app.modules.user.models import User
 
 router = APIRouter(prefix="/images", tags=['Image'])
 
-ALLOWED_EXTENSIONS = {"image/png", "image/jpeg", "image/jpg"}
+ALLOWED_EXTENSIONS = {"image/png", "image/jpeg", "image/jpg", "image/webp"}
 UPLOAD_DIR = "static"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)  # Ensure the static directory exists
