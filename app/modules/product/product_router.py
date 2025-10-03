@@ -6,6 +6,9 @@ from ...database import get_db
 from . import models
 from . import Schema
 from app.modules.user import models as user_models
+from app.modules.image import models as image_models
+from app.modules.category import models as category_models
+
 
 router = APIRouter(prefix="/posts",
                    tags=['Products'])
@@ -41,6 +44,14 @@ async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_d
                 current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin users can create products.")
+    # Check if image exists
+    existing_image = db.query(image_models.Image).filter(image_models.Image.id == post.image_id).first()
+    if not existing_image:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Image with id {post.image_id} does not exist.")
+    # Check if category exists
+    existing_category = db.query(category_models.Category).filter(category_models.Category.id == post.category_id).first()
+    if not existing_category:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Category with id {post.category_id} does not exist.")
     # Check for duplicate product name
     existing_product = db.query(models.Product).filter(models.Product.name == post.name).first()
     if existing_product:
