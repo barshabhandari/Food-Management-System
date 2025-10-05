@@ -19,16 +19,11 @@ router = APIRouter(prefix="/posts",
 @router.get("/", response_model=List[Schema.Product])
 async def search_products(
     q: Optional[str] = Query(None),
-    sort_by: Optional[str] = Query("price_asc"),
     db: Session = Depends(get_db),
 ):
     query = db.query(models.Product)
     if q:
-        query = query.filter(models.Product.name.ilike(f"%{q}%"))
-    if sort_by == "price_asc":
-        query = query.order_by(models.Product.actual_price.asc())
-    elif sort_by == "price_desc":
-        query = query.order_by(models.Product.actual_price.desc())
+        query = query.filter(models.Product.name == q).limit(1)
     return query.all()
 
 
@@ -42,6 +37,8 @@ async def get_all_products(db: Session = Depends(get_db)):
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=Schema.Product)
 async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_db),
                 current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin users can create products.")
     # Check if image exists
@@ -62,17 +59,19 @@ async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_d
     db.refresh(new_post)
     return new_post
 
-@router.get("/{id}", response_model=Schema.Product)
-async def get_single_product(id:int, db: Session = Depends(get_db)):
-    post = db.query(models.Product).filter(models.Product.id == id).first()
+@router.get("/{name}", response_model=Schema.Product)
+async def get_product_by_name(name:str, db: Session = Depends(get_db)):
+    post = db.query(models.Product).filter(models.Product.name == name).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Id {id} was not found")
+                            detail=f"Product with name {name} was not found")
     return post
 
 @router.put("/{id}", response_model=Schema.Product)
 async def updated_product(id:int, update_post:Schema.ProductBase, db:Session = Depends(get_db),
                     current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     post_query= db.query(models.Product).filter(models.Product.id == id)
     post = post_query.first()
     if not post:
@@ -89,6 +88,8 @@ async def updated_product(id:int, update_post:Schema.ProductBase, db:Session = D
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def deleted_product(id:int, db:Session= Depends(get_db),
                     current_user:user_models.User = Depends(oauth2_router.get_current_user)):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     post_query= db.query(models.Product).filter(models.Product.id == id)
     post= post_query.first()
     if not post:

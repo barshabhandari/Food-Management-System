@@ -10,7 +10,7 @@ class ProductBase(BaseModel):
     stock: int
     is_published: bool=True
     image_id: int
-    category_id: int 
+    category_id: int
     expire_date: date | None = None
 
 

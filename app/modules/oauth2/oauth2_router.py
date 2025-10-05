@@ -37,5 +37,9 @@ def get_current_user(token: str= Depends(oauth2_scheme),
     credentials_exception = HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Couldnot validate credentielas",
                                           headers={"WWW-Authenticate":"Bearer"})
     token = verify_access_token(token, credentials_exception)
-    user = db.query(models.User).filter(models.User.id == token.id).first()
+    try:
+        user_id = int(token.id)
+    except (ValueError, TypeError):
+        raise credentials_exception
+    user = db.query(models.User).filter(models.User.id == user_id).first()
     return user
