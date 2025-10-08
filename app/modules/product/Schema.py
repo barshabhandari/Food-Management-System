@@ -1,9 +1,6 @@
 from datetime import datetime, date
 from pydantic import BaseModel
-
-
-
-from typing import Optional
+from typing import Optional, List
 
 class ProductBase(BaseModel):
     name: str
@@ -24,7 +21,11 @@ class Product(ProductBase):
     created_at : datetime
     owner_id: int
     image_id: int
-        
+
     class Config():
         form_attributes = True
+
+class ProductSearchResponse(BaseModel):
+    products: List[Product]
+    message: Optional[str] = None
 

@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
@@ -6,6 +7,8 @@ from app.modules.cart import models, Schema
 from app.modules.user.models import User
 from app.modules.product.models import Product, Payment
 from app.modules.oauth2.oauth2_router import get_current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/carts", tags=["Carts"])
 
@@ -134,7 +137,7 @@ def delete_cart_item(
 
 
 # ---------- DELETE WHOLE CART ----------
-@router.delete("/{cart_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{cart_id}", status_code=status.HTTP_200_OK)
 def delete_cart(cart_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
@@ -148,7 +151,8 @@ def delete_cart(cart_id: int, db: Session = Depends(get_db), current_user: User 
         db.query(Payment).filter(Payment.cart_id == cart.id).delete()
         db.delete(cart)
         db.commit()
+        logger.info(f"Cart {cart_id} deleted by user {current_user.id}")
+        return {"message": "Cart deleted successfully. The admin has been notified."}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to delete cart: {str(e)}")
-    return None

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Response, status, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func, text, cast, Date
 from typing import Optional, List
 from app.modules.oauth2 import oauth2_router
 from ...database import get_db
@@ -16,15 +17,54 @@ router = APIRouter(prefix="/posts",
 
 
 # Searching for products
-@router.get("/", response_model=List[Schema.Product])
+@router.get("/", response_model=Schema.ProductSearchResponse)
 async def search_products(
-    q: Optional[str] = Query(None),
+    q: Optional[str] = Query(None, description="Search by product name (partial match)"),
+    min_price: Optional[float] = Query(None, description="Minimum discount price"),
+    max_price: Optional[float] = Query(None, description="Maximum discount price"),
+    months_left: Optional[int] = Query(None, description="Products expiring in at least this many months"),
     db: Session = Depends(get_db),
 ):
     query = db.query(models.Product)
     if q:
-        query = query.filter(models.Product.name == q).limit(1)
-    return query.all()
+        query = query.filter(models.Product.name.ilike(f"%{q}%"))
+    if min_price is not None:
+        query = query.filter(models.Product.discount_price >= min_price)
+    if max_price is not None:
+        query = query.filter(models.Product.discount_price <= max_price)
+    if months_left is not None:
+        query = query.filter(models.Product.expire_date > cast(func.now() + text(f"interval '{months_left} months'"), Date))
+    products = query.all()
+    message = None
+    if not products:
+        # Check if expiration filter is the issue
+        if months_left is not None:
+            query_no_expire = db.query(models.Product)
+            if q:
+                query_no_expire = query_no_expire.filter(models.Product.name.ilike(f"%{q}%"))
+            if min_price is not None:
+                query_no_expire = query_no_expire.filter(models.Product.discount_price >= min_price)
+            if max_price is not None:
+                query_no_expire = query_no_expire.filter(models.Product.discount_price <= max_price)
+            alt_products = query_no_expire.all()
+            if alt_products:
+                products = alt_products
+                message = "No products found within the specified expiration timeframe. Displaying alternative products."
+        # If not resolved, check price filter
+        if not products and (min_price is not None or max_price is not None):
+            query_no_price = db.query(models.Product)
+            if q:
+                query_no_price = query_no_price.filter(models.Product.name.ilike(f"%{q}%"))
+            if months_left is not None:
+                query_no_price = query_no_price.filter(models.Product.expire_date > cast(func.now() + text(f"interval '{months_left} months'"), Date))
+            alt_products = query_no_price.all()
+            if alt_products:
+                products = alt_products
+                message = "No products available in the selected price range. Displaying alternative products."
+        # If still no products
+        if not products:
+            message = "No products found matching your search criteria."
+    return {"products": products, "message": message}
 
 
 
