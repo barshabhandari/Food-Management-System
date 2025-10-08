@@ -68,11 +68,11 @@ async def get_product_by_name(name:str, db: Session = Depends(get_db)):
     return post
 
 @router.put("/{id}", response_model=Schema.Product)
-async def updated_product(id:int, update_post:Schema.ProductBase, db:Session = Depends(get_db),
-                    current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
+async def updated_product(id: int, update_post: Schema.ProductBase, db: Session = Depends(get_db),
+                          current_user: user_models.User = Depends(oauth2_router.get_current_user)):
     if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    post_query= db.query(models.Product).filter(models.Product.id == id)
+    post_query = db.query(models.Product).filter(models.Product.id == id)
     post = post_query.first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -80,7 +80,26 @@ async def updated_product(id:int, update_post:Schema.ProductBase, db:Session = D
     if not (current_user.is_admin or post.owner_id == current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")
-    post_query.update(update_post.dict(), synchronize_session=False)
+
+    # Validate image_id if provided
+    if update_post.image_id is not None:
+        if update_post.image_id == 0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image_id: cannot be 0")
+        existing_image = db.query(image_models.Image).filter(image_models.Image.id == update_post.image_id).first()
+        if not existing_image:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Image with id {update_post.image_id} does not exist.")
+
+    # Validate category_id if provided
+    if update_post.category_id is not None:
+        if update_post.category_id == 0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid category_id: cannot be 0")
+        existing_category = db.query(category_models.Category).filter(category_models.Category.id == update_post.category_id).first()
+        if not existing_category:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Category with id {update_post.category_id} does not exist.")
+
+    # Update only provided fields
+    update_data = update_post.dict(exclude_unset=True)
+    post_query.update(update_data, synchronize_session=False)
     db.commit()
     return post_query.first()
 

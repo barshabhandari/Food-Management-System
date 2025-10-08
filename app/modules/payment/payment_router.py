@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ...database import get_db
-from . import models
+from app.modules.product.models import Payment, PaymentStatus
 from . import Schema
 from app.modules.oauth2.oauth2_router import get_current_user
 from app.modules.user.models import User
@@ -16,6 +16,8 @@ def initiate_payment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     # Check if cart exists and belongs to user
     cart = db.query(Cart).filter(Cart.id == payment_data.cart_id, Cart.owner_id == current_user.id).first()
     if not cart:
@@ -84,5 +86,7 @@ def get_user_payments(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     payments = db.query(models.Payment).filter(models.Payment.user_id == current_user.id).all()
     return payments

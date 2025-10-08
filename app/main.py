@@ -24,7 +24,7 @@ app.add_middleware(
 
 )
 
-models.Base.metadata.create_all(bind=engine)
+# models.Base.metadata.create_all(bind=engine)  # Using Alembic migrations instead
 
 
 app.include_router(product_router)

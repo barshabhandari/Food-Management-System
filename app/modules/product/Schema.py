@@ -3,14 +3,16 @@ from pydantic import BaseModel
 
 
 
+from typing import Optional
+
 class ProductBase(BaseModel):
     name: str
     actual_price: int
     discount_price: float
     stock: int
-    is_published: bool=True
-    image_id: int
-    category_id: int
+    is_published: bool = True
+    image_id: Optional[int] = None
+    category_id: Optional[int] = None
     expire_date: date | None = None
 
 

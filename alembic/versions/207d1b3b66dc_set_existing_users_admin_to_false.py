@@ -24,11 +24,14 @@ def upgrade():
     op.execute(
         users.update()
         .where(users.c.id !=
-               sa.select([sa.func.min(users.c.id)]).scalar_subquery())
+               sa.select(sa.func.min(users.c.id)).scalar_subquery())
         .values(is_admin=False)
     )
 
 def downgrade():
+    users = table('users',
+                  column('id', Integer),
+                  column('is_admin', Boolean))
     # Revert all users is_admin to True
     op.execute(
         users.update()

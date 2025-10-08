@@ -22,6 +22,11 @@ class CategoryService:
 
     @staticmethod
     def create_category(db: Session, category: CategoryCreate):
+        # Check if category with the same name already exists
+        existing_category = db.query(Category).filter(Category.name == category.name).first()
+        if existing_category:
+            raise HTTPException(status_code=400, detail=f"Category with name '{category.name}' already exists")
+
         category_dict = category.dict()
         db_category = Category(**category_dict)
         db.add(db_category)
