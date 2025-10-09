@@ -1,13 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-import enum
-
-class PaymentStatus(str, enum.Enum):
-    PENDING = "pending"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+from ..product.models import PaymentStatus
 
 class PaymentBase(BaseModel):
     amount: float
@@ -21,8 +15,8 @@ class PaymentOut(PaymentBase):
     id: int
     user_id: int
     cart_id: int
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    created_at: str
+    updated_at: Optional[str] = None
 
 class PaymentInitiate(BaseModel):
     cart_id: int
