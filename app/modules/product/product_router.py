@@ -33,7 +33,7 @@ async def search_products(
     if max_price is not None:
         query = query.filter(models.Product.discount_price <= max_price)
     if months_left is not None:
-        query = query.filter(models.Product.expire_date > cast(func.now() + text(f"interval '{months_left} months'"), Date))
+        query = query.filter(models.Product.expire_date > func.date('now', f'+{months_left} months'))
     products = query.all()
     message = None
     if not products:
@@ -56,7 +56,7 @@ async def search_products(
             if q:
                 query_no_price = query_no_price.filter(models.Product.name.ilike(f"%{q}%"))
             if months_left is not None:
-                query_no_price = query_no_price.filter(models.Product.expire_date > cast(func.now() + text(f"interval '{months_left} months'"), Date))
+                query_no_price = query_no_price.filter(models.Product.expire_date > func.date('now', f'+{months_left} months'))
             alt_products = query_no_price.all()
             if alt_products:
                 products = alt_products
