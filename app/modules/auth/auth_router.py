@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from . import Schema
@@ -18,7 +17,7 @@ router = APIRouter(prefix="/login",
 @router.post("/", response_model= Schema.Token)
 async def login(user_credentials: OAuth2PasswordRequestForm = Depends(),
                 db:Session = Depends(get_db)):
-    
+
 
     user = db.query(models.User).filter(models.User.email == user_credentials.username).first()
     if not user:
@@ -29,3 +28,9 @@ async def login(user_credentials: OAuth2PasswordRequestForm = Depends(),
                             detail=f"Invalid Credentials")
     access_token= oauth2_router.create_access_token(data = {"user_id": user.id})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(current_user: models.User = Depends(oauth2_router.get_current_user)):
+    # Since JWT is stateless, logout is handled client-side by discarding the token
+    # We can optionally return a success message
+    return {"message": "Successfully logged out"}

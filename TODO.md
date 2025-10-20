@@ -1,4 +1,5 @@
 - [x] Update app/modules/product/Schema.py to replace image_id with image_url in Product schema
 - [x] Update app/modules/product/product_router.py to return custom dicts with image_url computed from image.key for all product response endpoints
 - [x] Test the changes to ensure image URLs are returned correctly instead of IDs
+- [x] Add user logout route to app/modules/auth/auth_router.py
 - [x] Add manufacture_date field to product creation and responses
