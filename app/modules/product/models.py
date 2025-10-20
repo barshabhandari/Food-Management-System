@@ -24,6 +24,7 @@ class Product(Base):
     image_id = Column(Integer, ForeignKey("images.id", ondelete="SET NULL"), nullable=True)
     category_id = Column(Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True)
     expire_date = Column(Date, nullable=True)
+    manufacture_date = Column(Date, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 

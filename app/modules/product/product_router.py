@@ -64,17 +64,35 @@ async def search_products(
         # If still no products
         if not products:
             message = "No products found matching your search criteria."
-    return {"products": products, "message": message}
+    result_products = []
+    for product in products:
+        product_dict = product.__dict__.copy()
+        if product.image:
+            product_dict['image_url'] = f"http://localhost:8000/static/{product.image.key}"
+        else:
+            product_dict['image_url'] = None
+        product_dict.pop('image_id', None)
+        result_products.append(product_dict)
+    return {"products": result_products, "message": message}
 
 
 
 
-@router.get("")
+@router.get("", response_model=List[Schema.ProductResponse])
 async def get_all_products(db: Session = Depends(get_db)):
-    post = db.query(models.Product).all()
-    return post
+    products = db.query(models.Product).all()
+    result = []
+    for product in products:
+        product_dict = product.__dict__.copy()
+        if product.image:
+            product_dict['image_url'] = f"http://localhost:8000/static/{product.image.key}"
+        else:
+            product_dict['image_url'] = None
+        product_dict.pop('image_id', None)
+        result.append(product_dict)
+    return result
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=Schema.Product)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=Schema.ProductResponse)
 async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_db),
                 current_user:user_models.User  = Depends(oauth2_router.get_current_user)):
     if not current_user:
@@ -97,17 +115,29 @@ async def create_product(post: Schema.ProductCreate, db: Session = Depends(get_d
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-    return new_post
+    product_dict = new_post.__dict__.copy()
+    if new_post.image:
+        product_dict['image_url'] = f"http://localhost:8000/static/{new_post.image.key}"
+    else:
+        product_dict['image_url'] = None
+    product_dict.pop('image_id', None)
+    return product_dict
 
-@router.get("/{name}", response_model=Schema.Product)
+@router.get("/{name}", response_model=Schema.ProductResponse)
 async def get_product_by_name(name:str, db: Session = Depends(get_db)):
-    post = db.query(models.Product).filter(models.Product.name == name).first()
-    if not post:
+    product = db.query(models.Product).filter(models.Product.name == name).first()
+    if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Product with name {name} was not found")
-    return post
+    product_dict = product.__dict__.copy()
+    if product.image:
+        product_dict['image_url'] = f"http://localhost:8000/static/{product.image.key}"
+    else:
+        product_dict['image_url'] = None
+    product_dict.pop('image_id', None)
+    return product_dict
 
-@router.put("/{id}", response_model=Schema.Product)
+@router.put("/{id}", response_model=Schema.ProductResponse)
 async def updated_product(id: int, update_post: Schema.ProductBase, db: Session = Depends(get_db),
                           current_user: user_models.User = Depends(oauth2_router.get_current_user)):
     if not current_user:
@@ -141,7 +171,14 @@ async def updated_product(id: int, update_post: Schema.ProductBase, db: Session 
     update_data = update_post.dict(exclude_unset=True)
     post_query.update(update_data, synchronize_session=False)
     db.commit()
-    return post_query.first()
+    updated_product = post_query.first()
+    product_dict = updated_product.__dict__.copy()
+    if updated_product.image:
+        product_dict['image_url'] = f"http://localhost:8000/static/{updated_product.image.key}"
+    else:
+        product_dict['image_url'] = None
+    product_dict.pop('image_id', None)
+    return product_dict
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

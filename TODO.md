@@ -1,15 +1,4 @@
-# TODO: Fix Product Update Error and Improve Modules
-
-## Product Update Fix
-- [x] Make image_id and category_id optional in ProductBase schema
-- [x] Update product_router.py to use exclude_unset for partial updates
-- [x] Add validation in update endpoint for image_id and category_id existence
-- [x] Test the update functionality (attempted, syntax issue with curl in PowerShell)
-
-## Module Improvements
-- [x] Review cart module (already smooth, no changes needed)
-- [x] Review payment module (already good, no changes needed)
-- [x] Ensure product module follows similar patterns
-+
-
-
+- [x] Update app/modules/product/Schema.py to replace image_id with image_url in Product schema
+- [x] Update app/modules/product/product_router.py to return custom dicts with image_url computed from image.key for all product response endpoints
+- [x] Test the changes to ensure image URLs are returned correctly instead of IDs
+- [x] Add manufacture_date field to product creation and responses
